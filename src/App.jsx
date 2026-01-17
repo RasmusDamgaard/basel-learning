@@ -1,262 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BookOpen, Brain, Calculator, Scale, FileText, ChevronRight, ChevronLeft, Check, X, RotateCcw, Lightbulb, Award, Target, Layers, HelpCircle, AlertTriangle, Shuffle, Home } from 'lucide-react';
-
-// ==================== DATA ====================
-const conceptualQuestions = {
-  lcr: [
-    { id: 'lcr_c1', question: 'What is the primary objective of the Liquidity Coverage Ratio (LCR)?', options: ['To ensure banks maintain adequate capital ratios', 'To promote short-term resilience by ensuring banks have sufficient HQLA to survive a 30-day stress scenario', 'To limit banks\' exposure to market risk', 'To ensure banks have stable long-term funding'], correct: 1, explanation: 'The LCR promotes short-term resilience of a bank\'s liquidity risk profile by ensuring it has sufficient high-quality liquid assets (HQLA) to survive a significant stress scenario lasting 30 calendar days.', reference: 'LCR20.1', difficulty: 'basic' },
-    { id: 'lcr_c2', question: 'What stress scenario does the LCR assume?', options: ['Only an idiosyncratic (bank-specific) shock', 'Only a market-wide systemic shock', 'A combined idiosyncratic and market-wide shock', 'A gradual deterioration over 90 days'], correct: 2, explanation: 'The LCR scenario entails a combined idiosyncratic AND market-wide shock including: run-off of retail deposits, partial loss of wholesale funding, collateral posting requirements from rating downgrades, and more.', reference: 'LCR20.2', difficulty: 'intermediate' },
-    { id: 'lcr_c3', question: 'Can banks use their HQLA buffer during stress periods, thereby falling below 100% LCR?', options: ['No, banks must always maintain LCR at or above 100%', 'Yes, but only with prior written approval', 'Yes, this is entirely appropriate during periods of stress', 'Only if the shortfall is less than 10%'], correct: 2, explanation: 'During periods of stress, "it would be entirely appropriate for banks to use their stock of HQLA, thereby falling below the minimum." The HQLA is intended as a defense against liquidity stress.', reference: 'LCR20.5', difficulty: 'intermediate' },
-    { id: 'lcr_c4', question: 'What is the relationship between Level 1 and Level 2 assets in the HQLA cap structure?', options: ['Level 2 assets can comprise up to 60% of HQLA', 'Level 2 assets can comprise up to 40% of HQLA, with Level 2B limited to 15%', 'There is no limit on Level 2 assets', 'Level 1 and Level 2 must be equal'], correct: 1, explanation: 'Level 1 assets can be included without limit, while Level 2 assets can only comprise up to 40% of total HQLA. Level 2B assets are further limited to 15% of total HQLA. These caps apply after haircuts.', reference: 'LCR30.30-30.34', difficulty: 'intermediate' },
-    { id: 'lcr_c5', question: 'Why should HQLA currency composition match operational needs?', options: ['It\'s only a suggestion', 'Because currencies may not remain transferable/convertible during stress', 'To maximize interest income', 'To reduce operational costs'], correct: 1, explanation: 'Banks and supervisors cannot assume currencies will remain transferable and convertible in a stress period. HQLA currency composition should match operational needs to ensure availability when needed.', reference: 'LCR10.9', difficulty: 'advanced' }
-  ],
-  nsfr: [
-    { id: 'nsfr_c1', question: 'What is the primary purpose of the NSFR?', options: ['To ensure banks survive a 30-day stress scenario', 'To require banks to maintain a stable funding profile over a one-year horizon', 'To limit concentration of funding sources', 'To measure intraday liquidity'], correct: 1, explanation: 'The NSFR requires banks to maintain a stable funding profile in relation to their assets and off-balance sheet activities over a one-year time horizon, complementing the LCR\'s 30-day focus.', reference: 'NSF20.1-20.2', difficulty: 'basic' },
-    { id: 'nsfr_c2', question: 'Why do retail deposits receive higher ASF factors than wholesale funding?', options: ['Retail deposits are government insured', 'Retail deposits are behaviorally more stable than wholesale funding', 'Wholesale funding is more expensive', 'Political decision to favor retail banks'], correct: 1, explanation: 'The NSFR assumes short-term deposits from retail customers are behaviorally more stable than wholesale funding of the same maturity. Retail depositors tend not to withdraw as quickly during stress.', reference: 'NSF30.2', difficulty: 'intermediate' },
-    { id: 'nsfr_c3', question: 'What does an RSF factor of 0% indicate?', options: ['The asset is worthless', 'The asset requires no stable funding - highly liquid or will mature soon', 'The asset cannot be included in NSFR', 'The asset has been written off'], correct: 1, explanation: 'A 0% RSF factor indicates the asset is so liquid or short-dated that it does not require stable funding. Examples: cash, central bank reserves, claims on central banks <6 months.', reference: 'NSF30.25', difficulty: 'intermediate' },
-    { id: 'nsfr_c4', question: 'How should investor call options on funding be treated?', options: ['Assume options will not be exercised', 'Assume investors redeem at the earliest possible date', 'Split 50/50 between early and late redemption', 'Ignore options in NSFR'], correct: 1, explanation: 'Banks must assume investors will redeem call options at the earliest possible date. This conservative approach ensures banks don\'t overstate funding stability.', reference: 'NSF30.7', difficulty: 'advanced' },
-    { id: 'nsfr_c5', question: 'What determines RSF treatment of encumbered assets?', options: ['Only asset type matters', 'The remaining encumbrance period and unencumbered RSF factor', 'Whether held domestically or abroad', 'Counterparty credit rating'], correct: 1, explanation: 'Encumbered assets receive RSF based on duration and underlying quality. ≥1 year encumbrance = 100% RSF; 6-12 months = higher of 50% or unencumbered factor; <6 months = unencumbered factor.', reference: 'NSF30.19', difficulty: 'advanced' }
-  ],
-  almm: [
-    { id: 'almm_c1', question: 'What is the purpose of the contractual maturity mismatch metric?', options: ['To replace the LCR calculation', 'To identify gaps between contractual inflows and outflows across time bands', 'To measure credit risk exposure', 'To calculate capital requirements'], correct: 1, explanation: 'The contractual maturity mismatch identifies gaps between contractual inflows and outflows for defined time bands, showing how much liquidity a bank would need if all outflows occurred at the earliest date.', reference: 'SRP50.6', difficulty: 'basic' },
-    { id: 'almm_c2', question: 'How is a "significant counterparty" defined for funding concentration?', options: ['Any counterparty rated below A', 'A counterparty accounting for >1% of total balance sheet', 'The top 10 counterparties', 'Only central banks and governments'], correct: 1, explanation: 'A significant counterparty is a single counterparty or connected group accounting for more than 1% of the bank\'s total balance sheet.', reference: 'SRP50.17', difficulty: 'intermediate' },
-    { id: 'almm_c3', question: 'What threshold defines "significant currency" in ALMM?', options: ['1% or more of total liabilities', '5% or more of total liabilities', '10% or more of total assets', 'Any currency on major exchanges'], correct: 1, explanation: 'A currency is "significant" if aggregate liabilities in that currency amount to 5% or more of total liabilities.', reference: 'SRP50.21', difficulty: 'intermediate' },
-    { id: 'almm_c4', question: 'Why does contractual maturity mismatch use raw data without behavioral assumptions?', options: ['To reduce complexity', 'To allow supervisors to apply own assumptions and enable cross-bank comparisons', 'Behavioral data unavailable', 'Regulations prohibit assumptions'], correct: 1, explanation: 'Standardized raw data enables supervisors to build a market-wide view, apply their own assumptions, and identify outliers. Banks separately conduct their own behavioral analyses.', reference: 'SRP50.10-50.11', difficulty: 'advanced' }
-  ]
-};
-
-const classificationItems = {
-  hqla: [
-    { item: 'Coins and banknotes', level: 'Level 1', haircut: '0%', explanation: 'Cash is the most liquid asset.' },
-    { item: 'Central bank reserves', level: 'Level 1', haircut: '0%', explanation: 'Immediately accessible deposits at central banks.' },
-    { item: 'Sovereign debt rated AA- or higher', level: 'Level 1', haircut: '0%', explanation: 'High-quality sovereign debt with minimal risk.' },
-    { item: 'Sovereign debt rated A+ to A-', level: 'Level 2A', haircut: '15%', explanation: 'Lower-rated but still investment grade.' },
-    { item: 'Corporate bonds rated AA- or higher', level: 'Level 2A', haircut: '15%', explanation: 'High-quality corporate bonds.' },
-    { item: 'Covered bonds rated AA- or higher (not own-issued)', level: 'Level 2A', haircut: '15%', explanation: 'Dual recourse securities.' },
-    { item: 'RMBS rated AA or higher', level: 'Level 2B', haircut: '25%', explanation: 'Securitized assets face liquidity concerns.' },
-    { item: 'Corporate bonds rated A+ to BBB-', level: 'Level 2B', haircut: '50%', explanation: 'Investment grade but higher risk.' },
-    { item: 'Major index equities', level: 'Level 2B', haircut: '50%', explanation: 'Volatile but liquid if in major indices.' },
-    { item: 'Own-issued securities', level: 'Ineligible', haircut: 'N/A', explanation: 'Cannot count own securities as HQLA.' },
-    { item: 'Claims on financial institutions', level: 'Ineligible', haircut: 'N/A', explanation: 'High wrong-way risk in stress.' }
-  ],
-  asf: [
-    { item: 'CET1 capital', factor: '100%', explanation: 'Permanent, loss-absorbing capital.' },
-    { item: 'Tier 2 instruments (maturity ≥1 year)', factor: '100%', explanation: 'Long-term subordinated debt.' },
-    { item: 'Secured/unsecured borrowings (≥1 year)', factor: '100%', explanation: 'Locked-in funding.' },
-    { item: 'Stable retail deposits (insured)', factor: '95%', explanation: 'Strong relationship, unlikely to withdraw.' },
-    { item: 'Less stable retail deposits', factor: '90%', explanation: 'Retail not meeting stability criteria.' },
-    { item: 'Wholesale funding 6-12 months (non-financial)', factor: '50%', explanation: 'Medium-term, some rollover risk.' },
-    { item: 'Operational deposits', factor: '50%', explanation: 'Sticky but can be withdrawn.' },
-    { item: 'Wholesale funding <6 months (financial)', factor: '0%', explanation: 'Highly flight-prone in stress.' },
-    { item: 'NSFR derivative liabilities', factor: '0%', explanation: 'Captured through separate treatment.' },
-    { item: 'Tier 2 instruments (<1 year)', factor: '0%', explanation: 'Will mature soon; not stable.' }
-  ],
-  rsf: [
-    { item: 'Cash and coins', factor: '0%', explanation: 'Immediately usable.' },
-    { item: 'Central bank reserves', factor: '0%', explanation: 'Can be drawn down immediately.' },
-    { item: 'Unencumbered Level 1 assets', factor: '5%', explanation: 'Highly liquid, small buffer for market risk.' },
-    { item: 'Unencumbered Level 2A assets', factor: '15%', explanation: 'Liquid but subject to haircuts.' },
-    { item: 'Unencumbered Level 2B RMBS', factor: '25%', explanation: 'Less liquid securitized assets.' },
-    { item: 'Unencumbered Level 2B corporate/equity', factor: '50%', explanation: 'Volatile values.' },
-    { item: 'Loans to FIs <6 months', factor: '10%', explanation: 'Short-term, highly liquid claims.' },
-    { item: 'Residential mortgages (RW≤35%, ≥1yr)', factor: '65%', explanation: 'Long-term but high quality.' },
-    { item: 'Other retail loans (≥1yr)', factor: '85%', explanation: 'Long-term retail, relatively illiquid.' },
-    { item: 'Non-performing loans', factor: '100%', explanation: 'Highly illiquid.' },
-    { item: 'Assets encumbered ≥1 year', factor: '100%', explanation: 'Cannot use during encumbrance.' }
-  ],
-  outflows: [
-    { item: 'Stable retail deposits (insured)', factor: '3%', explanation: 'Deposit insurance provides confidence.' },
-    { item: 'Less stable retail deposits', factor: '10%', explanation: 'Higher withdrawal risk in stress.' },
-    { item: 'Operational deposits (financial)', factor: '25%', explanation: 'Portion needed for operations stays.' },
-    { item: 'Non-operational deposits (financial)', factor: '100%', explanation: 'Fully assumed to run.' },
-    { item: 'Unsecured wholesale (non-financial)', factor: '40%', explanation: 'Less flighty than financial.' },
-    { item: 'Secured funding - Level 1 collateral', factor: '0%', explanation: 'Can roll with high-quality collateral.' },
-    { item: 'Secured funding - Level 2A collateral', factor: '15%', explanation: 'Some haircut risk.' },
-    { item: 'Committed credit facilities (retail)', factor: '5%', explanation: 'Retail draws less than corporates.' },
-    { item: 'Committed credit facilities (non-fin corp)', factor: '10%', explanation: 'Corporates may draw to hoard.' },
-    { item: 'Committed liquidity facilities (non-fin corp)', factor: '30%', explanation: 'Designed for liquidity; higher draw.' },
-    { item: 'Committed facilities (financial)', factor: '100%', explanation: 'FIs draw aggressively in stress.' }
-  ]
-};
-
-const calculationExercises = [
-  {
-    id: 'calc_lcr_1', title: 'Basic LCR Calculation', difficulty: 'basic', type: 'lcr',
-    scenario: `HQLA:
-• Cash: €50m
-• Central bank reserves: €100m  
-• AA-rated government bonds: €200m
-• AA-rated corporate bonds: €80m
-• A-rated corporate bonds: €40m
-
-Net Cash Outflows: €300m`,
-    question: 'Calculate the bank\'s LCR. Does it meet the minimum requirement?',
-    hints: ['Level 1 assets have 0% haircut', 'Level 2A (AA- corporate) have 15% haircut', 'Level 2B (A-rated) have 50% haircut', 'Check 40% Level 2 cap'],
-    solution: {
-      steps: [
-        'Level 1 (0% haircut): €50m + €100m + €200m = €350m',
-        'Level 2A (15% haircut): €80m × 85% = €68m',
-        'Level 2B (50% haircut): €40m × 50% = €20m',
-        'Level 2 cap check: €88m < (2/3 × €350m) = €233m ✓',
-        'Total HQLA = €350m + €68m + €20m = €438m',
-        'LCR = €438m / €300m = 146%'
-      ],
-      answer: 'LCR = 146%. Exceeds 100% minimum.',
-      keyInsight: 'Level 2 caps were not binding. Banks with large Level 2 holdings may find HQLA capped.'
-    }
-  },
-  {
-    id: 'calc_nsfr_1', title: 'Basic NSFR Calculation', difficulty: 'basic', type: 'nsfr',
-    scenario: `LIABILITIES & EQUITY:
-• CET1 capital: €50m
-• Tier 2 (5yr maturity): €30m
-• Stable retail deposits: €200m
-• Less stable retail: €100m
-• Wholesale <6 months: €120m
-
-ASSETS:
-• Cash: €20m
-• CB reserves: €30m
-• AA-rated govt bonds: €80m
-• Level 2A corporate: €50m
-• Mortgages (RW≤35%, ≥1yr): €250m
-• Other retail loans (≥1yr): €70m`,
-    question: 'Calculate the bank\'s NSFR.',
-    hints: ['Calculate ASF by applying factors to liabilities', 'Calculate RSF by applying factors to assets', 'NSFR = ASF / RSF'],
-    solution: {
-      steps: [
-        'ASF: CET1(100%): €50m + Tier2(100%): €30m + Stable(95%): €190m + LessStable(90%): €90m + Wholesale(0%): €0 = €360m',
-        'RSF: Cash(0%): €0 + CB(0%): €0 + L1(5%): €4m + L2A(15%): €7.5m + Mortgages(65%): €162.5m + Retail(85%): €59.5m = €233.5m',
-        'NSFR = €360m / €233.5m = 154.2%'
-      ],
-      answer: 'NSFR = 154.2%. Exceeds 100% minimum.',
-      keyInsight: 'Strong NSFR from stable retail deposits. Wholesale <6m provides zero ASF.'
-    }
-  },
-  {
-    id: 'calc_almm_1', title: 'Funding Concentration', difficulty: 'basic', type: 'almm',
-    scenario: `Total liabilities: €10 billion
-Top counterparties:
-• A (financial): €300m
-• B (pension fund): €150m  
-• C (non-fin corp): €80m
-• D (connected group): €120m
-• E (retail aggregator): €50m`,
-    question: 'Which counterparties are "significant" (>1% threshold)?',
-    hints: ['Calculate 1% of €10bn', 'Compare each counterparty', 'Connected parties aggregate'],
-    solution: {
-      steps: [
-        '1% threshold = €100m',
-        'A: €300m / €10bn = 3.0% ✓ SIGNIFICANT',
-        'B: €150m / €10bn = 1.5% ✓ SIGNIFICANT',
-        'C: €80m / €10bn = 0.8% ✗',
-        'D: €120m / €10bn = 1.2% ✓ SIGNIFICANT',
-        'E: €50m / €10bn = 0.5% ✗'
-      ],
-      answer: 'A (3.0%), B (1.5%), and D (1.2%) are significant counterparties.',
-      keyInsight: 'Funding concentration metrics identify single points of failure.'
-    }
-  }
-];
-
-const interpretationScenarios = [
-  {
-    id: 'interp_1', title: 'HQLA Currency Mismatch', category: 'lcr', difficulty: 'advanced',
-    scenario: `Your Danish mortgage institution has:
-• Operational needs: 80% DKK, 15% EUR, 5% USD
-• Current HQLA: 50% DKK, 40% EUR, 10% USD
-FX swap markets have tightened. Danish central bank doesn't accept EUR assets.`,
-    question: 'What regulatory concerns does this create? How should the bank address them?',
-    guidance: ['Consider LCR10.9 on currency matching', 'Consider LCR30.29 on HQLA diversification', 'Consider convertibility assumptions in stress'],
-    modelAnswer: `**Concerns:**
-1. Currency Mismatch Risk: HQLA (50/40/10) deviates from needs (80/15/5)
-2. Central Bank Eligibility: EUR assets ineligible for Danish facilities
-3. Wrong-Way Risk: May be unable to convert EUR to DKK precisely when needed
-
-**Actions:**
-1. Increase DKK HQLA to 70-80%
-2. Establish committed FX swap facilities
-3. Confirm central bank emergency access
-4. Report currency mismatch under ALMM`,
-    regulations: ['LCR10.9', 'LCR30.29', 'SRP50.20-21']
-  },
-  {
-    id: 'interp_2', title: 'Covered Bond Eligibility for SDRO Issuer', category: 'lcr', difficulty: 'advanced',
-    scenario: `Your institution issues SDRO bonds (Danish covered bonds). An analyst asks if:
-1. Your own SDROs can be included in HQLA
-2. Competitor SDRO bonds can be included`,
-    question: 'What are the rules around covered bonds in HQLA?',
-    guidance: ['Consider prohibition on own-issued securities', 'Consider Level 2A criteria for covered bonds', 'Consider wrong-way risk'],
-    modelAnswer: `**Own-Issued SDROs:** CANNOT include. LCR30.41 excludes securities issued by the bank itself.
-
-**Competitor SDROs:** CAN qualify as Level 2A if:
-• Rated AA- or higher
-• Not issued by bank or related entities
-• Meet LCR30.43 covered bond criteria
-• Apply 15% haircut
-• Subject to 40% Level 2 cap`,
-    regulations: ['LCR30.41', 'LCR30.43']
-  },
-  {
-    id: 'interp_3', title: 'Match-Funding and NSFR', category: 'nsfr', difficulty: 'advanced',
-    scenario: `Your institution uses match-funding:
-• Issue 30-year covered bond at fixed rate
-• Originate matching 30-year mortgage
-• Cash flows are matched
-Bond is callable by borrower (passed through). Historical prepayment: 5-7% annually.`,
-    question: 'How should match-funded positions be treated for NSFR?',
-    guidance: ['Consider ASF treatment of long-dated funding', 'Consider RSF treatment of mortgages', 'Consider prepayment impact on effective maturity'],
-    modelAnswer: `**ASF (30-Year Bond):** 100% factor (maturity >1 year)
-Note: Investor call options → assume earliest redemption
-
-**RSF (30-Year Mortgage):** 65% factor (RW≤35%, ≥1yr)
-
-**Key Points:**
-• Match-funding doesn't provide special NSFR benefit
-• Each side treated independently
-• Prepayments create temporary cash but reduce future ASF
-• NSFR contribution: (100% × Bond) / (65% × Mortgage) ≈ 154%`,
-    regulations: ['NSF30.7', 'NSF30.10', 'NSF30.29']
-  }
-];
-
-const flashcards = {
-  lcr: [
-    { front: 'LCR Formula', back: 'LCR = Stock of HQLA / Total Net Cash Outflows (30 days) ≥ 100%' },
-    { front: 'LCR Stress Duration', back: '30 calendar days of combined idiosyncratic and market-wide stress' },
-    { front: 'Level 1 Assets', back: 'Cash, CB reserves, sovereign securities (0% RW). No haircut, no cap.' },
-    { front: 'Level 2A Haircut', back: '15%. Includes sovereign (20% RW), AA- corporate, qualifying covered bonds.' },
-    { front: 'Level 2B Haircut', back: '25-50%. Includes RMBS, A+ to BBB- corporate, qualifying equities.' },
-    { front: 'Level 2 Cap', back: 'Maximum 40% of total HQLA (after haircuts)' },
-    { front: 'Level 2B Cap', back: 'Maximum 15% of total HQLA (after haircuts)' },
-    { front: 'Stable Retail Outflow', back: '3% (fully insured with established relationship)' },
-    { front: 'Less Stable Retail Outflow', back: 'At least 10%' },
-    { front: 'Non-operational Wholesale (FI)', back: '100% assumed to run' },
-    { front: 'Inflow Cap', back: 'Total inflows capped at 75% of gross outflows' }
-  ],
-  nsfr: [
-    { front: 'NSFR Formula', back: 'NSFR = ASF / RSF ≥ 100%' },
-    { front: 'NSFR Time Horizon', back: 'One-year structural funding horizon' },
-    { front: 'ASF 100%', back: 'CET1/AT1/Tier2(≥1yr), borrowings ≥1yr' },
-    { front: 'ASF 95%', back: 'Stable retail deposits' },
-    { front: 'ASF 90%', back: 'Less stable retail deposits' },
-    { front: 'ASF 50%', back: 'Operational deposits, non-fin corp 6-12m' },
-    { front: 'ASF 0%', back: 'Wholesale <6m, derivative liabilities' },
-    { front: 'RSF 0%', back: 'Cash, central bank reserves' },
-    { front: 'RSF 5%', back: 'Unencumbered Level 1 assets' },
-    { front: 'RSF 65%', back: 'Residential mortgages RW≤35%, ≥1yr' },
-    { front: 'RSF 100%', back: 'NPLs, assets encumbered ≥1yr, all other' }
-  ],
-  almm: [
-    { front: 'ALMM Components', back: 'Maturity mismatch, Funding concentration, Unencumbered assets, LCR by currency, Market monitoring, Intraday' },
-    { front: 'Significant Counterparty', back: '>1% of total balance sheet' },
-    { front: 'Significant Instrument', back: '>1% of total balance sheet' },
-    { front: 'Significant Currency', back: '≥5% of total liabilities' },
-    { front: 'Concentration Time Bands', back: '<1m, 1-3m, 3-6m, 6-12m, >12m' },
-    { front: 'Intraday Reporting', back: 'Monthly, alongside LCR' },
-    { front: 'Maturity Mismatch Assumptions', back: 'No rollover, no new contracts, raw contractual data' }
-  ]
-};
+import { conceptualQuestions, classificationItems, calculationExercises, interpretationScenarios, flashcards } from './data';
 
 // ==================== MAIN COMPONENT ====================
 export default function BaselLearningAssistant() {
@@ -320,9 +64,22 @@ export default function BaselLearningAssistant() {
   );
 
   const TopicSelector = () => (
-    <div className="flex gap-2 mb-4">
-      {[{ id: 'lcr', label: 'LCR' }, { id: 'nsfr', label: 'NSFR' }, { id: 'almm', label: 'ALMM' }].map(t => (
-        <button key={t.id} onClick={() => { setActiveTopic(t.id); resetQuiz(); resetClassification(); }} className={`px-4 py-2 rounded-lg font-medium ${activeTopic === t.id ? 'bg-blue-600 text-white' : 'bg-gray-100 hover:bg-gray-200'}`}>{t.label}</button>
+    <div className="flex gap-2 mb-4 flex-wrap">
+      {[
+        { id: 'lcr', label: 'LCR' },
+        { id: 'nsfr', label: 'NSFR' },
+        { id: 'almm', label: 'ALMM' },
+        { id: 'capital', label: 'Capital' },
+        { id: 'leverage', label: 'Leverage' },
+        { id: 'creditrisk', label: 'Credit Risk' },
+        { id: 'marketrisk', label: 'Market Risk' },
+        { id: 'operational', label: 'Op Risk' },
+        { id: 'pillar2', label: 'Pillar 2' },
+        { id: 'pillar3', label: 'Pillar 3' },
+        { id: 'repos', label: 'Repos' },
+        { id: 'bonds', label: 'Bonds' }
+      ].map(t => (
+        <button key={t.id} onClick={() => { setActiveTopic(t.id); resetQuiz(); resetClassification(); }} className={`px-3 py-2 rounded-lg font-medium text-sm ${activeTopic === t.id ? 'bg-blue-600 text-white' : 'bg-gray-100 hover:bg-gray-200'}`}>{t.label}</button>
       ))}
     </div>
   );
@@ -376,7 +133,13 @@ export default function BaselLearningAssistant() {
   };
 
   const renderClassification = () => {
-    const categories = { hqla: { title: 'HQLA Classification', options: ['Level 1', 'Level 2A', 'Level 2B', 'Ineligible'] }, asf: { title: 'ASF Factors', options: ['100%', '95%', '90%', '50%', '0%'] }, rsf: { title: 'RSF Factors', options: ['0%', '5%', '10%', '15%', '25%', '50%', '65%', '85%', '100%'] }, outflows: { title: 'Outflow Rates', options: ['0%', '3%', '5%', '10%', '15%', '25%', '30%', '40%', '100%'] } };
+    const categories = {
+      hqla: { title: 'HQLA Classification', options: ['Level 1', 'Level 2A', 'Level 2B', 'Ineligible'] },
+      asf: { title: 'ASF Factors', options: ['100%', '95%', '90%', '50%', '0%'] },
+      rsf: { title: 'RSF Factors', options: ['0%', '5%', '10%', '15%', '25%', '50%', '65%', '85%', '100%'] },
+      outflows: { title: 'Outflow Rates', options: ['0%', '3%', '5%', '10%', '15%', '25%', '30%', '40%', '100%'] },
+      riskweights: { title: 'Risk Weights', options: ['0%', '2%', '10%', '20%', '35%', '50%', '100%', '250%'] }
+    };
     const items = classificationItems[classificationCategory];
     const current = items[currentClassificationIndex];
     const cat = categories[classificationCategory];
@@ -493,8 +256,8 @@ export default function BaselLearningAssistant() {
   const renderHome = () => (
     <div className="space-y-6">
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">Basel III Liquidity Learning Assistant</h1>
-        <p className="text-gray-600">Master LCR, NSFR, and ALMM through interactive learning</p>
+        <h1 className="text-3xl font-bold text-gray-800 mb-2">Basel III Learning Platform</h1>
+        <p className="text-gray-600">Master Basel III regulations including liquidity (LCR, NSFR, ALMM), capital, leverage, risk frameworks, repos, and bonds</p>
       </div>
       <div className="grid md:grid-cols-2 gap-4">
         <ModuleButton module="conceptual" icon={Brain} title="1. Conceptual Mastery" description="Understand the 'why' behind the requirements" />
