@@ -38,7 +38,8 @@ export default function BaselLearningAssistant() {
 
   useEffect(() => {
     if (activeApproach === 'flashcards' && activeTopic) {
-      setShuffledCards(shuffleArray(flashcards[activeTopic]));
+      const topicCards = flashcards[activeTopic] || [];
+      setShuffledCards(topicCards.length > 0 ? shuffleArray(topicCards) : []);
       setCurrentFlashcardIndex(0);
       setIsFlipped(false);
     }

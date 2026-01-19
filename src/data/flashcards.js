@@ -82,5 +82,65 @@ export const flashcards = {
     { front: 'Covered Bond Risk Weight', back: '10-20% (vs 20-50% for unsecured bank bonds)' },
     { front: 'Match-Funded NSFR Impact', back: 'No special treatment. Bonds: 100% ASF. Mortgages in pool: 100% RSF (encumbered).' },
     { front: 'Prepayment Risk', back: 'Borrowers repay early (typically when rates fall), creating reinvestment risk for bond investors' }
+  ],
+  creditrisk: [
+    { front: 'Credit Risk Definition', back: 'Risk of loss from borrower/counterparty failure to meet contractual obligations' },
+    { front: 'Standardized Approach', back: 'Uses external credit ratings and fixed risk weights based on asset class' },
+    { front: 'IRB Approach', back: 'Internal Ratings-Based: banks use own models for PD, LGD, EAD to calculate RWA' },
+    { front: 'Residential Mortgage RW', back: '35% (if LTV ≤ 80% and prudential standards met)' },
+    { front: 'Corporate Exposure RW (AA)', back: '20% risk weight for AA-rated corporates' },
+    { front: 'Corporate Exposure RW (A)', back: '50% risk weight for A-rated corporates' },
+    { front: 'Sovereign RW (AAA)', back: '0% risk weight for highest quality sovereigns' },
+    { front: 'Credit Conversion Factor', back: 'CCF converts off-balance sheet exposures to credit exposure equivalent' },
+    { front: 'Credit Risk Mitigation', back: 'Techniques to reduce exposure: collateral, guarantees, netting, credit derivatives' },
+    { front: 'Covered Bond RW', back: '10-20% due to dual recourse structure and strict cover pool criteria' }
+  ],
+  marketrisk: [
+    { front: 'Market Risk Definition', back: 'Risk of losses from movements in market prices (interest rates, FX, equity, commodities)' },
+    { front: 'Trading Book', back: 'Positions held for short-term trading or hedging; subject to market risk capital' },
+    { front: 'Banking Book', back: 'Positions held to maturity or for stable income; subject to credit risk capital' },
+    { front: 'Value-at-Risk (VaR)', back: 'Estimates maximum loss at given confidence level (99%) over holding period (10 days)' },
+    { front: 'Stressed VaR', back: 'VaR calculated using historical stress period data; captures tail risks' },
+    { front: 'Basis Risk', back: 'Risk that offsetting positions in related instruments do not move perfectly together' },
+    { front: 'Interest Rate Risk', back: 'Risk from changes in interest rates affecting portfolio value' },
+    { front: 'FX Risk', back: 'Risk from changes in exchange rates; relevant for positions in foreign currencies' },
+    { front: 'Fundamental Review of Trading Book (FRTB)', back: 'Revised market risk framework with stricter trading/banking book boundary' },
+    { front: 'Expected Shortfall (ES)', back: 'Average loss beyond VaR; replaces VaR in FRTB for better tail risk capture' }
+  ],
+  operational: [
+    { front: 'Operational Risk Definition', back: 'Risk of loss from inadequate/failed internal processes, people, systems, or external events' },
+    { front: 'Op Risk Examples', back: 'Fraud, system failures, legal liability, failed transactions, cyber attacks' },
+    { front: 'Standardized Approach (SMA)', back: 'Business Indicator Component (BIC) × Internal Loss Multiplier (ILM)' },
+    { front: 'Business Indicator (BI)', back: 'Sum of interest, services, and financial components; proxy for bank size/activity' },
+    { front: 'Internal Loss Multiplier', back: 'Adjusts capital based on bank\'s historical operational losses' },
+    { front: 'Repo Operational Risks', back: 'Settlement failures, collateral management errors, legal documentation risks' },
+    { front: 'Legal Risk', back: 'Risk from inadequate documentation or enforceability of contracts' },
+    { front: 'Cyber Risk', back: 'Risk from cyber attacks, data breaches, system intrusions' },
+    { front: 'Business Continuity', back: 'Plans and procedures to maintain operations during disruptions' },
+    { front: 'Key Risk Indicators (KRIs)', back: 'Metrics used to monitor and predict operational risk levels' }
+  ],
+  pillar2: [
+    { front: 'Pillar 2 Purpose', back: 'Supervisory Review Process: assess risks not fully captured in Pillar 1' },
+    { front: 'ICAAP', back: 'Internal Capital Adequacy Assessment Process: bank\'s own capital assessment' },
+    { front: 'SREP', back: 'Supervisory Review and Evaluation Process: supervisor\'s assessment of bank' },
+    { front: 'IRRBB', back: 'Interest Rate Risk in Banking Book: key Pillar 2 risk for many banks' },
+    { front: 'Concentration Risk', back: 'Excessive exposure to single name, sector, or geography; Pillar 2 add-on' },
+    { front: 'Business Model Risk', back: 'Risk that bank\'s strategy is not sustainable or viable' },
+    { front: 'Pillar 2A', back: 'Additional capital to cover risks not in Pillar 1 (firm-specific)' },
+    { front: 'Pillar 2B', back: 'Capital buffer for stress scenarios (PRA Pillar 2B guidance)' },
+    { front: 'Management Buffer', back: 'Extra capital above requirements for flexibility and uncertainty' },
+    { front: 'Supervisory Intervention', back: 'Powers to require more capital, restrict activities, or enforce actions' }
+  ],
+  pillar3: [
+    { front: 'Pillar 3 Purpose', back: 'Market Discipline: promote transparency through disclosure requirements' },
+    { front: 'Disclosure Frequency', back: 'Annual comprehensive, semi-annual/quarterly for key metrics' },
+    { front: 'Capital Disclosure', back: 'Must disclose capital composition, ratios, and reconciliation to accounts' },
+    { front: 'RWA Disclosure', back: 'Breakdown of risk-weighted assets by category and approach used' },
+    { front: 'Liquidity Disclosure', back: 'LCR, NSFR, HQLA composition, funding concentration, currency breakdown' },
+    { front: 'Credit Risk Disclosure', back: 'Exposures by geography, industry, maturity; impaired assets; provisions' },
+    { front: 'Remuneration Disclosure', back: 'Disclosure of compensation policies and practices for senior staff' },
+    { front: 'Leverage Ratio Disclosure', back: 'Quarterly disclosure of leverage ratio and exposure components' },
+    { front: 'Comparability', back: 'Standardized templates to enable comparison across banks' },
+    { front: 'Covered Bond Disclosure', back: 'Cover pool composition, quality, over-collateralization, stress tests' }
   ]
 };
